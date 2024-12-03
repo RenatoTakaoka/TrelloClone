@@ -21,6 +21,7 @@
     "cal-sans": "^1.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.462.0",
     "next": "14.2.18",
     "react": "^18",
@@ -28,11 +29,13 @@
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "unsplash-js": "^7.0.19",
     "usehooks-ts": "^3.1.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
