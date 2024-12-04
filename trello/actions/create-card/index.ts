@@ -1,11 +1,11 @@
 "use server"
 
-import {InputType, ReturnType} from "@/actions/create-list/types";
+import {InputType, ReturnType} from "@/actions/create-card/types";
 import {auth} from "@clerk/nextjs/server";
 import {db} from "@/lib/db";
 import {revalidatePath} from "next/dist/server/web/spec-extension/revalidate";
 import {createSafeAction} from "@/lib/create-safe-action";
-import {CreateList} from "@/actions/create-list/schema";
+import {CreateCard} from "@/actions/create-card/schema";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const {userId, orgId} = await auth()
@@ -16,41 +16,43 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         }
     }
 
-    const { title, boardId } = data
-    let list
+    const { title, boardId, listId } = data
+    let card
 
     try {
-        const board = await db.board.findUnique({
+        const list = await db.list.findUnique({
             where: {
-                id: boardId,
-                orgId
+                id: listId,
+                board: {
+                    orgId
+                }
             }
         })
 
-        if (!board) {
+        if (!list) {
             return {
-                error: "Board not found"
+                error: "List not found"
             }
         }
 
-        const lastList = await db.list.findFirst({
+        const lastCard = await db.card.findFirst({
             where: {
-                boardId: boardId
+                listId
             },
             orderBy: {
-                order: "desc"
+                order: 'desc'
             },
             select: {
                 order: true
             }
         })
 
-        const newOrder = lastList ? lastList.order + 1 : 1
+        const newOrder = lastCard ? lastCard.order + 1 : 1
 
-        list = await db.list.create({
+        card = await db.card.create({
             data: {
                 title,
-                boardId,
+                listId,
                 order: newOrder
             }
         })
@@ -61,7 +63,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     }
 
     revalidatePath(`/board/${boardId}`)
-    return {data: list}
+    return {data: card}
 }
 
-export const createList = createSafeAction(CreateList, handler)
+export const createCard = createSafeAction(CreateCard, handler)
