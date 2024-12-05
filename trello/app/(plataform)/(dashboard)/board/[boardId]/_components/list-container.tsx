@@ -5,6 +5,10 @@ import {ListForm} from "@/app/(plataform)/(dashboard)/board/[boardId]/_component
 import {useEffect, useState} from "react";
 import {ListItem} from "@/app/(plataform)/(dashboard)/board/[boardId]/_components/list-item";
 import {DragDropContext, Droppable} from "@hello-pangea/dnd";
+import {useAction} from "@/hooks/use-action";
+import {updateListOrder} from "@/actions/update-list-order";
+import {toast} from "sonner";
+import {updateCardOrder} from "@/actions/update-card-order";
 
 interface ListContainerProps {
     data: ListWithCards[];
@@ -25,12 +29,30 @@ export const ListContainer = ({
 }: ListContainerProps) => {
     const [orderedData, setOrderedData] = useState(data);
 
+    const {execute: executeUpdateListOrder} = useAction(updateListOrder, {
+        onSuccess: () => {
+            toast.success("List order updated")
+        },
+        onError: (error) => {
+            toast.error(error)
+        }
+    })
+
+    const {execute: executeUpdateCardOrder} = useAction(updateCardOrder, {
+        onSuccess: () => {
+            toast.success("List order updated")
+        },
+        onError: (error) => {
+            toast.error(error)
+        }
+    })
+
     useEffect(() => {
         setOrderedData(data);
     }, [data])
 
     const onDragEnd = (result: any) => {
-        const { destination, source, type } = result
+        const { destination, source, type } = result;
 
         if (!destination) {
             return
@@ -52,11 +74,11 @@ export const ListContainer = ({
                 destination.index
             ).map((item, index) => ({...item, order: index}))
             setOrderedData(items)
-            // TODO: Trigger Server Action
+            executeUpdateListOrder({items, boardId})
         }
 
         if (type === "card") {
-            let newOrderedData = [...orderedData]
+            const newOrderedData = [...orderedData]
 
             // Source and destination list
             const sourceList = newOrderedData.find(list => list.id === source.droppableId)
@@ -91,7 +113,7 @@ export const ListContainer = ({
                 sourceList.cards = reorderedCards
 
                 setOrderedData(newOrderedData)
-                // TODO: Trigger Server Action
+                executeUpdateCardOrder({items: reorderedCards, boardId})
                 // user moves the card to another list
             } else {
                 // Remove card from source list
@@ -113,7 +135,7 @@ export const ListContainer = ({
                 })
 
                 setOrderedData(newOrderedData)
-                // TODO: Trigger Server Action
+                executeUpdateCardOrder({items: destList.cards, boardId})
             }
         }
     }

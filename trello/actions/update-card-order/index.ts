@@ -1,11 +1,11 @@
 "use server"
 
-import {InputType, ReturnType} from "@/actions/update-list-order/types";
+import {InputType, ReturnType} from "@/actions/update-card-order/types";
 import {auth} from "@clerk/nextjs/server";
 import {db} from "@/lib/db";
 import {revalidatePath} from "next/dist/server/web/spec-extension/revalidate";
 import {createSafeAction} from "@/lib/create-safe-action";
-import {UpdateListOrder} from "@/actions/update-list-order/schema";
+import {UpdateCardOrder} from "@/actions/update-card-order/schema";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const {userId, orgId} = await auth()
@@ -17,24 +17,27 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     }
 
     const { items, boardId } = data
-    let lists
+    let updatedCards
 
     try {
-        const transaction = items.map((list) =>
-            db.list.update({
-                where:{
-                    id: list.id,
-                    board: {
-                        orgId
+        const transaction = items.map((card) =>
+            db.card.update({
+                where: {
+                    id: card.id,
+                    list: {
+                        board: {
+                            orgId
+                        },
                     },
                 },
                 data: {
-                    order: list.order
+                    order: card.order,
+                    listId: card.listId
                 }
             })
         )
 
-        lists = await db.$transaction(transaction)
+        updatedCards = await db.$transaction(transaction)
     } catch {
         return {
             error: "Failed to reorder"
@@ -42,7 +45,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     }
 
     revalidatePath(`/board/${boardId}`)
-    return {data: lists}
+    return {data: updatedCards}
 }
 
-export const updateListOrder = createSafeAction(UpdateListOrder, handler)
+export const updateCardOrder = createSafeAction(UpdateCardOrder, handler)
