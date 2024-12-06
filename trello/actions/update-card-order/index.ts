@@ -38,6 +38,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         )
 
         updatedCards = await db.$transaction(transaction)
+
     } catch {
         return {
             error: "Failed to reorder"

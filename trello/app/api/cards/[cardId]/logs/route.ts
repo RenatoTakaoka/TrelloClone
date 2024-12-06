@@ -14,7 +14,7 @@ export async function GET(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const auditLogs = await db.auditLog.findFirst({
+        const auditLogs = await db.auditLog.findMany({
             where: {
                 orgId,
                 entityId: params.cardId,
